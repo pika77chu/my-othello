@@ -552,6 +552,14 @@
                         board[g.y][g.x] = nowPlayer;
                     }
                 }else if (mode === 9) {
+                    let air = 0;
+                    for (let i = 0; i < 8; i++) {
+                        for (let j = 0; j < 8; j++) {
+                            if (board[i][j] === 0) air++;
+                        }
+                    }
+                    if (air < 15) depth = 8;
+                    else depth = 6;
                     let moves = canPut(nowPlayer);
                     moves.sort((a,b) => (evalBoard[b.y][b.x]+b.canGet.length*2) - (evalBoard[a.y][a.x]+a.canGet.length*2));
                     let bestMove = null;
@@ -559,7 +567,7 @@
                     for (let m of moves) {
                         let backup = JSON.parse(JSON.stringify(board));
                         applyMove(m, 2);
-                        let score = minimax(6,-Infinity,Infinity,false);
+                        let score = minimax(depth,-Infinity,Infinity,false);
                         board = backup;
                         if (score > bestScore) {
                             bestScore = score;
@@ -568,6 +576,14 @@
                     }
                     if (bestMove) applyMove(bestMove, 2);
                 }else if (mode === 10) {
+                    let air = 0;
+                    for (let i = 0; i < 8; i++) {
+                        for (let j = 0; j < 8; j++) {
+                            if (board[i][j] === 0) air++;
+                        }
+                    }
+                    if (air < 15) depth = 10;
+                    else depth = 8;
                     let moves = canPut(nowPlayer);
                     moves.sort((a,b) => (evalBoard[b.y][b.x]+b.canGet.length*2) - (evalBoard[a.y][a.x]+a.canGet.length*2));
                     let bestMove = null;
@@ -575,7 +591,7 @@
                     for (let m of moves) {
                         let backup = JSON.parse(JSON.stringify(board));
                         applyMove(m, 2);
-                        let score = minimax(8,-Infinity,Infinity,false);
+                        let score = minimax(depth,-Infinity,Infinity,false);
                         board = backup;
                         if (score > bestScore) {
                             bestScore = score;
