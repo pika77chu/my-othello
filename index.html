@@ -549,6 +549,7 @@
                     if (c.x === tx && c.y === ty) {num = 1;cp = c;break;}
                 }
                 if (num === 0) return;
+                MusicPlay(MouseClick);
                 board[cp.y][cp.x] = nowPlayer;
                 for (let g of cp.canGet) board[g.y][g.x] = nowPlayer;
                 stonePut();
