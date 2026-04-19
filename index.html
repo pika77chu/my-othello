@@ -277,7 +277,12 @@
             <div id="board"></div>
             <p id="message"></p>
         </div>
+        <audio id="bgm1" src="Breakbeats_01.mp3" loop></audio>
+        <audio id="bgm2" src="RPG_Battle_02.mp3" loop></audio>
         <script>
+            const BGM1 = document.getElementById("bgm1");
+            const BGM2 = document.getElementById("bgm2");
+            const MouseClick = new Audio("マウスクリック.mp3");
             let mode = 0;
             let name = "";
             let score = 0;
@@ -296,8 +301,21 @@
                 [120,-20, 20,  5,  5, 20,-20,120]
             ];
 
+            const BGMPlay = (bgm) => {
+                bgm.volume = 0.5;
+                bgm.play();
+            }
+
+            function MusicPlay(a) {
+                a.currentTime = 0;
+                a.play();
+            }
+
             function start(sum) {
+                MusicPlay(MouseClick);
                 if (sum === 1 || sum === 2 || (sum >= 6 && sum <= 10)) {
+                    BGM1.pause();
+                    BGMPlay(BGM2);
                     score = 0;
                     mode = sum;
                     let moji = mode === 1? "Two-player mode" : mode === 2? "Beginner" : mode === 6? "Easy" : mode === 7? "Normal" : mode === 8? "Hard" : mode === 9? "Expert" : "Master";
@@ -323,18 +341,21 @@
                     stonePut();
                     span();
                     if (mode === 1 || mode >= 8) return;
-                    canPutList = canPut(nowPlayer);
+                    let canPutList = canPut(nowPlayer);
                     for (let i = 0; i < 64; i++) document.getElementById(i).classList.remove("can");
                     for (let i of canPutList) {
                         let id = i.y*8+i.x;
                         document.getElementById(id).classList.add("can");
                     }
                 }else if (sum === 4) {
+                    BGM2.pause();
+                    BGM1.pause();
                     boards.innerHTML = "";
                     document.getElementById("message").innerHTML = "";
                     buttons.innerHTML = `<p><button onclick="start(5)">Single-player mode</button> 
                     <button onclick="start(1)">Two-player mode</button></p>`;
                 }else if (sum === 5) {
+                    BGMPlay(BGM1);
                     buttons.innerHTML = `<p><a href="#" onclick="start(11)">Ranking</a> <a href="#" onclick="start(4)">Return</a></p><p><button onclick="start(2)">
                     Beginner</button> <button onclick="start(6)">Easy</button><p><button onclick="start(7)">Normal</button> <button 
                     onclick="start(8)">Hard</button></p><p><button onclick="start(9)">Expert</button> <button onclick="start(10)">
@@ -399,6 +420,7 @@
                 document.getElementById("span").innerHTML = moji;
                 let canPutList = canPut(nowPlayer);
                 if (air === 0 || ((white === 0 || black === 0) && white+black !== 0)) {
+                    BGM2.pause();
                     if (mode === 1) {
                         let message = "";
                         if (black > white) {
@@ -446,10 +468,61 @@
                         }
                     }
                 }else if (canPutList.length === 0) {
+                    let op = nowPlayer === 1? 2 : 1;
+                    let ocp = canPut(op);
+                    if (ocp.length === 0) {
+                        BGM2.pause();
+                        if (mode === 1) {
+                            let message = "";
+                            if (black > white) {
+                                message = "Black wins!";
+                            }else if (white > black) {
+                                message = "White wins!";
+                            }else {
+                                message = "Draw!";
+                            }
+                            document.getElementById("centerMessage").innerHTML = message;
+                        }else {
+                            let message = "";
+                            if (black > white) {
+                                message = "You win!";
+                            }else if (white > black) {
+                                message = "You lose!";
+                            }else {
+                                message = "Draw!";
+                            }
+                            document.getElementById("centerMessage").innerHTML = message;
+                            let corner = 0;
+                            const cn = [{x: 0,y: 0},{x: 0,y: 7},{x: 7,y: 0},{x: 7,y: 7}];
+                            for (let c of cn) {
+                                if (board[c.y][c.x] === 1) corner++;
+                            }
+                            let base = 1000+(black-white)*10+corner*50;
+                            let ml = 0;
+                            if (mode === 2) ml = 1;
+                            else if (mode === 6) ml = 2;
+                            else if (mode === 7) ml = 3;
+                            else if (mode === 8) ml = 4;
+                            else if (mode === 9) ml = 5;
+                            else ml = 6;
+                            score = base*ml;
+                            if (black > white) {
+                                let mj = mode === 1? "" : mode === 2? "Beginner" : mode === 6? "Easy" : mode === 7? "Normal" : mode === 8? "Hard" : mode === 9? "Expert" : "Master";
+                                document.getElementById("buttons").innerHTML = `<h2>${mj}</h2>
+                                 <p id="span">${moji}</p>`;
+                                setTimeout(() => {
+                                    document.getElementById("message").innerHTML = "";
+                                    document.getElementById("board").innerHTML = "";
+                                    document.getElementById("buttons").innerHTML = `<p>SCORE: ${score}</p><p>Send this score to the leaderboard?</p><p><button 
+                                    onclick="start(12)">Yes</button> <button onclick="start(4)">No</button></p>`;
+                                },2000);
+                            }
+                        }
+                    }
                     if (mode !== 1 && nowPlayer === 2) {
                         nowPlayer = nowPlayer === 1? 2 : 1;
                     }else {
-                        document.getElementById("message").innerHTML = "You have no valid moves, so you pass my turn.";
+                        document.getElementById("message").innerHTML = "You have no valid moves, so you pass your turn.";
                         setTimeout(() => {
                             nowPlayer = nowPlayer === 1? 2 : 1;
                             document.getElementById("message").innerHTML = "";
@@ -505,6 +578,7 @@
 
             function send() {
                 if (name.length === 0) return;
+                MusicPlay(MouseClick);
                 sendScore();
                 start(4);
             }
@@ -558,6 +632,7 @@
                             if (board[i][j] === 0) air++;
                         }
                     }
+                    let depth = 0;
                     if (air < 15) depth = 8;
                     else depth = 6;
                     let moves = canPut(nowPlayer);
@@ -582,6 +657,7 @@
                             if (board[i][j] === 0) air++;
                         }
                     }
+                    let depth = 0;
                     if (air < 15) depth = 10;
                     else depth = 8;
                     let moves = canPut(nowPlayer);
