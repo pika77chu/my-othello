@@ -10,6 +10,14 @@
                 font-family: 'Arial', sans-serif;
                 text-align: center;
             }
+
+            html, body {
+                height: 100%;
+                overflow-x: hidden;
+                overflow-y: auto;
+                margin: 0;
+                padding: 0;
+            }
             .appframe {
                 width: min(95vw,560px);
                 background: linear-gradient(145deg, #d2b48c, #8b6a3e);
@@ -198,8 +206,9 @@
                 }
                 .appframe {
                     width: 100%;
-                    height: 100dvh;
-                    overflow: hidden;
+                    height: auto;
+                    overflow-x: hidden;
+                    overflow-y: auto;
                     margin: 0;
                     padding: 10px;
                     border-radius: 0;
