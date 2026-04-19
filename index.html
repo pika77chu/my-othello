@@ -149,19 +149,6 @@
                 transform: translateY(-2px);
                 background: rgba(255, 255, 255, 0.25);
             }
-            @media (max-width: 600px) {
-                td {
-                    width: 10vw;
-                    height: 10vw;
-                }
-                button {
-                    font-size: 5vw;
-                    padding: 8px 12px;
-                }
-                h1 {
-                    font-size: 6vw;
-                }
-            }
             @keyframes pop {
                 to {
                     transform: scale(1);
@@ -189,12 +176,6 @@
                 transform: translateY(1px);
                 box-shadow: 0 4px 10px rgba(0,0,0,0.4);
             }
-            @media (max-width: 600px) {
-                a {
-                    font-size: 5vw;
-                    padding: 8px 14px;
-                }
-            }
             #span {
                 margin-top: 10px;
                 font-size: min(4.5vw, 20px);
@@ -207,6 +188,63 @@
                 box-shadow: 
                     0 5px 12px rgba(0,0,0,0.5),
                     inset 0 0 8px rgba(255,255,255,0.4);
+            }
+            @media (max-width: 600px) {
+                body {
+                    margin: 0;
+                    padding: 0;
+                }
+                .appframe {
+                    width: 100vw;
+                    min-height: 100vh;
+                    margin: 0;
+                    padding: 10px;
+                    border-radius: 0;
+                    box-sizing: border-box;
+                }
+                h1 {
+                    font-size: 7vw;
+                    margin: 10px 0;
+                }
+                #board {
+                    width: 100%;
+                    overflow: hidden;
+                }
+                table {
+                    width: 100%;
+                    max-width: 100vw;
+                    table-layout: fixed;
+                }
+                td {
+                    width: calc(100vw / 8);
+                    height: calc(100vw / 8);
+                }
+                .stone {
+                    width: 85%;
+                    height: 85%;
+                    top: 7.5%;
+                    left: 7.5%;
+                }
+                button {
+                    width: 90%;
+                    font-size: 5vw;
+                    padding: 10px;
+                    margin: 6px auto;
+                    display: block;
+                }
+                a {
+                    width: 90%;
+                    display: block;
+                    margin: 6px auto;
+                    font-size: 5vw;
+                }
+                #span {
+                    font-size: 4vw;
+                    padding: 8px;
+                }
+                .center-message {
+                    font-size: 10vw;
+                }
             }
         </style>
     </head>
