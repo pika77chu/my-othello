@@ -195,8 +195,9 @@
                     padding: 0;
                 }
                 .appframe {
-                    width: 100vw;
-                    min-height: 100vh;
+                    width: 100%;
+                    height: 100dvh;
+                    overflow: hidden;
                     margin: 0;
                     padding: 10px;
                     border-radius: 0;
@@ -211,13 +212,13 @@
                     overflow: hidden;
                 }
                 table {
-                    width: 100%;
-                    max-width: 100vw;
+                    width: min(95vw,95dvh);
+                    height: min(95vw,95dvh);
                     table-layout: fixed;
                 }
                 td {
-                    width: calc(100vw / 8);
-                    height: calc(100vw / 8);
+                    width: 12.5%;
+                    height: 12.5%;
                 }
                 .stone {
                     width: 85%;
