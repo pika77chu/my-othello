@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Othello</title>
+        <style>
+            body {
+                background: radial-gradient(circle at center, #2a1f14, #120d08);
+                font-family: 'Arial', sans-serif;
+                text-align: center;
+            }
+            .appframe {
+                width: min(95vw,560px);
+                background: linear-gradient(145deg, #d2b48c, #8b6a3e);
+                padding: 25px;
+                margin: 40px auto;
+                border-radius: 16px;
+                box-shadow: inset 0 0 15px rgba(255,255,255,0.2),0 15px 40px rgba(0,0,0,0.7);
+                border: 8px solid #5a3e1b;
+            }
+            h1 {
+                color: #111;
+                letter-spacing: 3px;
+                text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
+            }
+            table {
+                margin: 0 auto;
+                border-collapse: collapse;
+                background: radial-gradient(circle, #0f7a3f, #084d2a);
+                border: 8px solid #2a1a0a;
+                box-shadow: inset 0 0 20px rgba(0,0,0,0.6);
+            }
+            #board {
+                position: relative;
+            }
+            .center-message {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);    
+                font-size: 40px;
+                font-weight: bold;
+                color: rgba(255,255,255,0.7);
+                pointer-events: none; /* クリック邪魔しない */
+                text-shadow: 0 0 10px rgba(0,0,0,0.7);
+            }           
+            td {
+                width: 52px;
+                height: 52px;
+                border: 1px solid rgba(0,0,0,0.4);
+                position: relative;
+                cursor: pointer;
+                touch-action: manipulation;
+            }
+            td::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    rgba(255,255,255,0.05),
+                    rgba(0,0,0,0.2)
+                );
+            }
+            td:hover {
+                background: rgba(255,255,255,0.08);
+            }
+            button {
+                background: linear-gradient(145deg, #3aa0ff, #1f6fd1);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                margin-bottom: 15px;
+                border-radius: 10px;
+                cursor: pointer;
+                font-size: min(6vw,26px);
+                box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+                transition: all 0.2s;
+            }
+            button:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+            }
+            button.empty {
+                background: gray;
+            }
+            .stone {
+                position: absolute;
+                transform: scale(0);
+                animation: pop 0.2s forwards;
+                width: 80%;
+                height: 80%;
+                top: 10%;
+                left: 10%;
+                border-radius: 50%;
+                box-shadow: inset -4px -4px 10px rgba(0,0,0,0.6),
+                            inset 4px 4px 10px rgba(255,255,255,0.2),0 3px 6px rgba(0,0,0,0.6);
+            }
+            .black {
+                background: radial-gradient(circle at 30% 30%, #666, #000);
+            }
+            .white {
+                background: radial-gradient(circle at 30% 30%, #fff, #ccc);
+            }
+            .can {
+                position: relative;
+            }
+            .can::before {
+                content: "";
+                position: absolute;
+                width: 40%;
+                height: 40%;
+                top: 30%;
+                left: 30%;
+                border-radius: 50%;
+                background: rgba(255,255,0,0.6);
+                box-shadow: 0 0 10px rgba(255,255,0,0.8);
+            }
+            h2 {
+                color: #111;
+                font-size: min(6vw, 28px);
+                letter-spacing: 2px;
+                margin: 10px 0 15px;
+                text-shadow: 1px 1px 3px rgba(255,255,255,0.5);
+                background: rgba(255,255,255,0.2);
+                display: inline-block;
+                padding: 6px 14px;
+                border-radius: 10px;
+            }
+            ul {
+               list-style: none;
+                padding: 0;
+                margin: 10px auto;
+                max-width: 420px;
+            }
+            li {
+                background: rgba(255, 255, 255, 0.15);
+                margin: 6px 0;
+                padding: 10px 12px;
+                border-radius: 10px;
+                color: #1a1a1a;
+                font-weight: bold;
+                box-shadow: inset 0 0 6px rgba(0,0,0,0.2),
+                            0 3px 6px rgba(0,0,0,0.2);
+                text-align: left;
+                transition: 0.2s;
+            }
+            li:hover {
+                transform: translateY(-2px);
+                background: rgba(255, 255, 255, 0.25);
+            }
+            @media (max-width: 600px) {
+                td {
+                    width: 10vw;
+                    height: 10vw;
+                }
+                button {
+                    font-size: 5vw;
+                    padding: 8px 12px;
+                }
+                h1 {
+                    font-size: 6vw;
+                }
+            }
+            @keyframes pop {
+                to {
+                    transform: scale(1);
+                }
+            }
+            a {
+                display: inline-block;
+                background: linear-gradient(145deg, #ffcc66, #d89b2b);
+                color: #2a1a0a;
+                text-decoration: none;
+                padding: 10px 20px;
+                border-radius: 10px;
+                font-weight: bold;
+                font-size: min(5vw,20px);
+                box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+                transition: all 0.2s;
+                letter-spacing: 1px;
+            }
+            a:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 20px rgba(0,0,0,0.6);
+                background: linear-gradient(145deg, #ffd77a, #e6a93a);
+            }
+            a:active {
+                transform: translateY(1px);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+            }
+            @media (max-width: 600px) {
+                a {
+                    font-size: 5vw;
+                    padding: 8px 14px;
+                }
+            }
+            #span {
+                margin-top: 10px;
+                font-size: min(4.5vw, 20px);
+                font-weight: bold;
+                padding: 10px 14px;
+                border-radius: 12px;
+                display: inline-block;
+                background: radial-gradient(circle at top, #ffe4b5, #b58b4c);
+                color: #111;
+                box-shadow: 
+                    0 5px 12px rgba(0,0,0,0.5),
+                    inset 0 0 8px rgba(255,255,255,0.4);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="appframe">
+            <h1>OTHELLO</h1>
+            <div id="buttons">
+                <p><button onclick="start(5)">Single-player mode</button> 
+                <button onclick="start(1)">Two-player mode</button></p>
+            </div>
+            <div id="board"></div>
+            <p id="message"></p>
+        </div>
+        <script>
+            let mode = 0;
+            let name = "";
+            let score = 0;
+            let nowPlayer = 1;//black
+            const buttons = document.getElementById("buttons");
+            const boards = document.getElementById("board");
+            let board = [];
+            const evalBoard = [
+                [120,-20, 20,  5,  5, 20,-20,120],
+                [-20,-40, -5, -5, -5, -5,-40,-20],
+                [ 20, -5, 15,  3,  3, 15, -5, 20],
+                [  5, -5,  3,  3,  3,  3, -5,  5],
+                [  5, -5,  3,  3,  3,  3, -5,  5],
+                [ 20, -5, 15,  3,  3, 15, -5, 20],
+                [-20,-40, -5, -5, -5, -5,-40,-20],
+                [120,-20, 20,  5,  5, 20,-20,120]
+            ];
+
+            function start(sum) {
+                if (sum === 1 || sum === 2 || (sum >= 6 && sum <= 10)) {
+                    score = 0;
+                    mode = sum;
+                    let moji = mode === 1? "" : mode === 2? "Beginner" : mode === 6? "Easy" : mode === 7? "Normal" : mode === 8? "Hard" : mode === 9? "Expert" : "Master";
+                    buttons.innerHTML = `<h2>${moji}</h2><p><button onclick="start(4)">Stop</button></p><p id="span"></p>`;
+                    let html = `<table>`;
+                    for (let y = 0; y < 8; y++) {
+                        html += `<tr>`;
+                        for (let x = 0; x < 8; x++) {
+                            let id = y*8+x;
+                            html += `<td id="${id}" onclick="setUpClickEvents(${id})"></td>`;
+                        }
+                        html += `</tr>`;
+                    }
+                    html += `</table>`;
+                    boards.innerHTML = html+`<div id="centerMessage" class="center-message"></div>`;
+                    board = new Array(8);
+                    for (let i = 0; i < 8; i++) board[i] = new Array(8).fill(0);
+                    board[3][3] = 2;//white
+                    board[4][3] = 1;//black
+                    board[4][4] = 2;//white
+                    board[3][4] = 1;//black
+                    nowPlayer = 1;//black
+                    stonePut();
+                    span();
+                    if (mode === 1 || mode >= 8) return;
+                    canPutList = canPut(nowPlayer);
+                    for (let i = 0; i < 64; i++) document.getElementById(i).classList.remove("can");
+                    for (let i of canPutList) {
+                        let id = i.y*8+i.x;
+                        document.getElementById(id).classList.add("can");
+                    }
+                }else if (sum === 4) {
+                    boards.innerHTML = "";
+                    document.getElementById("message").innerHTML = "";
+                    buttons.innerHTML = `<p><button onclick="start(5)">Single-player mode</button> 
+                    <button onclick="start(1)">Two-player mode</button></p>`;
+                }else if (sum === 5) {
+                    buttons.innerHTML = `<p><a href="#" onclick="start(11)">Ranking</a> <a href="#" onclick="start(4)">Return</a></p><p><button onclick="start(2)">
+                    Beginner</button> <button onclick="start(6)">Easy</button><p><button onclick="start(7)">Normal</button> <button 
+                    onclick="start(8)">Hard</button></p><p><button onclick="start(9)">Expert</button> <button onclick="start(10)">
+                    Master</button></p>`;
+                }else if (sum === 11) {
+                    (async () => {
+                    const q = window.fs.query(
+                        window.fs.collection(window.db, "ranking"),
+                        window.fs.orderBy("score", "desc"),
+                        window.fs.limit(100)
+                    );
+                    const snap = await window.fs.getDocs(q);
+                    let data = [];
+                    snap.forEach(doc => {
+                        data.push(doc.data());
+                    });
+                    if (data.length > 0) {
+                        data.sort((a,b) => b.score - a.score);
+                        let map = {};
+                        for (let r of data) {
+                            if (!map[r.name] || map[r.name].score < r.score) {
+                                map[r.name] = r;
+                            }
+                        }
+                        data = Object.values(map);
+                    }
+                    let html = `<h2>RANKING</h2><p><button onclick="start(5)">Return</button></p><ul>`;
+                    for (let i = 0; i < Math.min(data.length,100); i++) {
+                        html += `<li>${i+1}.${data[i].name} - ${data[i].score}</li>`;
+                    }
+                    html += `<ul>`;
+                    document.getElementById("buttons").innerHTML = html;
+                })();
+                }else if (sum === 12) {
+                    document.getElementById("buttons").innerHTML = `<p>Enter your nickname</p><p><input id="input" type="text" class="empty" maxlength="12" oninput="input()"><button onclick="send()">Send</button></p>`;
+                }
+            }
+
+            function input() {
+                name = document.getElementById("input").value;
+                document.getElementById("input").classList.remove("empty");
+                if (name.length === 0) document.getElementById("input").classList.add("empty");
+            }
+
+            function span() {
+                let white = 0;
+                let black = 0;
+                let air = 0;
+                for (let i = 0; i < 8; i++) {
+                    for (let j = 0; j < 8; j++) {
+                        if (board[i][j] === 0) air++;
+                        else if (board[i][j] === 1) black++;
+                        else white++;
+                    }
+                }
+                let turn = "";
+                if (mode === 1) turn = nowPlayer === 1? "Black turn" : "White turn";
+                else turn = nowPlayer === 1? "Your turn" : "Opponent’s turn";
+                let left = `${mode === 1? "Black" : "You"}: ${black}`;
+                let right = `${mode === 1? "White": "Opponent"}: ${white}`;
+                let moji = `${left} ${turn} ${right}`;
+                document.getElementById("span").innerHTML = moji;
+                let canPutList = canPut(nowPlayer);
+                if (air === 0 || ((white === 0 || black === 0) && white+black !== 0)) {
+                    if (mode === 1) {
+                        let message = document.getElementById("message");
+                        if (black > white) {
+                            message.innerHTML = "Black wins!"
+                        }else if (white > black) {
+                            message.innerHTML = "White wins!";
+                        }else {
+                            message.innerHTML = "It's a draw!"
+                        }
+                    }else {
+                        let message = "";
+                        if (black > white) {
+                            message = "You win!"
+                        }else if (white > black) {
+                            message =  "You lose!";
+                        }else {
+                            message = "Draw!";
+                        }
+                        document.getElementById("centerMessage").innerHTML = message;
+                        let corner = 0;
+                        const cn = [{x: 0,y: 0},{x: 0,y: 7},{x: 7,y: 0},{x: 7,y: 7}];
+                        for (let c of cn) {
+                            if (board[c.y][c.x] === 1) corner++;
+                        }
+                        let base = 1000+(black-white)*10+corner*50;
+                        let ml = 0;
+                        if (mode === 2) ml = 1;
+                        else if (mode === 6) ml = 2;
+                        else if (mode === 7) ml = 3;
+                        else if (mode === 8) ml = 4;
+                        else if (mode === 9) ml = 5;
+                        else ml = 6;
+                        score = base*ml;
+                        if (black > white) {
+                            let mj = mode === 1? "" : mode === 2? "Beginner" : mode === 6? "Easy" : mode === 7? "Normal" : mode === 8? "Hard" : mode === 9? "Expert" : "Master";
+                            document.getElementById("buttons").innerHTML = `<h2>${mj}</h2>
+                             <p id="span">${moji}</p>`;
+                            setTimeout(() => {
+                                document.getElementById("message").innerHTML = "";
+                                document.getElementById("board").innerHTML = "";
+                                document.getElementById("buttons").innerHTML = `<p>SCORE: ${score}</p><p>Send this score to the leaderboard?</p><p><button 
+                                onclick="start(12)">Yes</button> <button onclick="start(4)">No</button></p>`;
+                            },2000);
+                        }
+                    }
+                }else if (canPutList.length === 0) {
+                    if (mode !== 1 && nowPlayer === 2) {
+                        nowPlayer = nowPlayer === 1? 2 : 1;
+                    }else {
+                        document.getElementById("message").innerHTML = "You have no valid moves, so you pass my turn.";
+                        setTimeout(() => {
+                            nowPlayer = nowPlayer === 1? 2 : 1;
+                            document.getElementById("message").innerHTML = "";
+                            if (mode !== 1) {
+                                let e = mode <= 8? 1000 : 2000;
+                                setTimeout(() => {aiTurn();},e);
+                            }
+                        },1000);
+                    }
+                }else if (mode !== 1 && nowPlayer === 2) {
+                    let e = mode <= 8? 1000 : 2000;
+                    setTimeout(() => {aiTurn();},e);
+                }
+            }
+
+            function setUpClickEvents(td) {
+                if (mode !== 1 && nowPlayer === 2) return;
+                let canPutList = canPut(nowPlayer);
+                let tx = td%8;
+                let ty = Math.floor(td/8);
+                let num = 0;
+                let cp = {};
+                for (let c of canPutList) {
+                    if (c.x === tx && c.y === ty) {num = 1;cp = c;break;}
+                }
+                if (num === 0) return;
+                board[cp.y][cp.x] = nowPlayer;
+                for (let g of cp.canGet) board[g.y][g.x] = nowPlayer;
+                stonePut();
+                nowPlayer = nowPlayer === 1? 2 : 1;
+                span();
+            }
+
+            function stonePut() {
+                for (let i = 0; i < 64; i++) document.getElementById(i).classList.remove("black","white");
+                for (let i = 0; i < 64; i++) {
+                    document.getElementById(i).innerHTML = "";
+                }
+                for (let y = 0; y < 8; y++) {
+                    for (let x = 0; x < 8; x++) {
+                        let id = y*8+x;
+                        const td = document.getElementById(id);
+                        if (board[y][x] !== 0) {
+                            const stone = document.createElement("div");
+                            stone.classList.add("stone");
+                            if (board[y][x] === 1) stone.classList.add("black");
+                            else if (board[y][x] === 2) stone.classList.add("white");
+                            td.appendChild(stone);
+                        }
+                    }
+                }
+            }
+
+            function send() {
+                if (name.length === 0) return;
+                sendScore();
+                start(4);
+            }
+            
+            function aiTurn() {
+                let canPutList = canPut(nowPlayer);
+                if (mode === 2) {
+                    let cp = canPutList.filter(x => x.canGet.length <= 3);
+                    if (cp.length === 0) cp = [...canPutList];
+                    let c = cp[Math.floor(Math.random()*cp.length)];
+                    board[c.y][c.x] = nowPlayer;
+                    for (let g of c.canGet) {
+                        board[g.y][g.x] = nowPlayer;
+                    }
+                }else if (mode === 6) {
+                    canPutList.sort((a,b) => b.canGet.length - a.canGet.length);
+                    let num = canPutList[0].canGet.length;
+                    let cp = canPutList.filter(x => x.canGet.length === num);
+                    let c = cp[Math.floor(Math.random()*cp.length)];
+                    board[c.y][c.x] = nowPlayer;
+                    for (let g of c.canGet) {
+                        board[g.y][g.x] = nowPlayer;
+                    }
+                }else if (mode === 7) {
+                    let cp = canPutList.filter(x => ((x.x === 0 && x.y === 0) || (x.x === 7 && x.y === 0) || (x.x === 0 && x.y === 7) || (x.x === 7 && x.y === 7)));
+                    if (cp.length === 0) cp = [...canPutList];
+                    cp.sort((a,b) => b.canGet.length - a.canGet.length);
+                    let num = cp[0].canGet.length;
+                    let cp2 = cp.filter(x => x.canGet.length === num);
+                    let c = cp2[Math.floor(Math.random()*cp2.length)];
+                    board[c.y][c.x] = nowPlayer;
+                    for (let g of c.canGet) {
+                        board[g.y][g.x] = nowPlayer;
+                    }
+                }else if (mode === 8) {
+                    canPutList.sort((a,b) => (evalBoard[b.y][b.x]+b.canGet.length*2) - (evalBoard[a.y][a.x]+a.canGet.length*2));
+                    let num = evalBoard[canPutList[0].y][canPutList[0].x];
+                    let cp = canPutList.filter(x => evalBoard[x.y][x.x] === num);
+                    cp.sort((a,b) => b.canGet.length - a.canGet.length);
+                    let num2 = cp[0].canGet.length;
+                    let cp2 = cp.filter(x => x.canGet.length === num2);
+                    let c = cp2[Math.floor(Math.random()*cp2.length)];
+                    board[c.y][c.x] = nowPlayer;
+                    for (let g of c.canGet) {
+                        board[g.y][g.x] = nowPlayer;
+                    }
+                }else if (mode === 9) {
+                    let moves = canPut(nowPlayer);
+                    moves.sort((a,b) => (evalBoard[b.y][b.x]+b.canGet.length*2) - (evalBoard[a.y][a.x]+a.canGet.length*2));
+                    let bestMove = null;
+                    let bestScore = -Infinity;
+                    for (let m of moves) {
+                        let backup = JSON.parse(JSON.stringify(board));
+                        applyMove(m, 2);
+                        let score = minimax(6,-Infinity,Infinity,false);
+                        board = backup;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMove = m;
+                        }
+                    }
+                    if (bestMove) applyMove(bestMove, 2);
+                }else if (mode === 10) {
+                    let moves = canPut(nowPlayer);
+                    moves.sort((a,b) => (evalBoard[b.y][b.x]+b.canGet.length*2) - (evalBoard[a.y][a.x]+a.canGet.length*2));
+                    let bestMove = null;
+                    let bestScore = -Infinity;
+                    for (let m of moves) {
+                        let backup = JSON.parse(JSON.stringify(board));
+                        applyMove(m, 2);
+                        let score = minimax(8,-Infinity,Infinity,false);
+                        board = backup;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMove = m;
+                        }
+                    }
+                    if (bestMove) applyMove(bestMove, 2);
+                }
+                stonePut();
+                nowPlayer = nowPlayer === 1? 2 : 1;
+                span();
+                if (mode === 1 || mode >= 8) return;
+                canPutList = canPut(nowPlayer);
+                for (let i = 0; i < 64; i++) document.getElementById(i).classList.remove("can");
+                for (let i of canPutList) {
+                    let id = i.y*8+i.x;
+                    document.getElementById(id).classList.add("can");
+                }
+            }
+
+            function canPut(player) {
+                let canPut = [];
+                let enemy = player === 1? 2 : 1;
+                for (let y = 0; y < 8; y++) {
+                    for (let x = 0; x < 8; x++) {
+                        let canGet = [];
+                        if (board[y][x] !== 0) continue;
+                        let d = [];
+                        for (let i = -1; i <= 1; i++) {
+                            for (let j = -1; j <= 1; j++) {
+                                if (y+i < 0 || y+i >= 8 || x+j < 0 || x+j >= 8) continue;
+                                if (board[y+i][x+j] === enemy) d.push([i,j]);
+                            }
+                        }
+                        if (d.length === 0) continue;
+                        for (let i = 0; i < d.length; i++) {
+                            let f = 0;
+                            for (let j = 2; j < 8; j++) {
+                                let dx = x+d[i][1]*j;
+                                let dy = y+d[i][0]*j;
+                                if (dx < 0 || dx >= 8 || dy < 0 || dy >= 8) break;
+                                if (board[dy][dx] === player) {f = j;break;}
+                            }
+                            if (f === 0) continue;
+                            let num = 0;
+                            for (let j = 1; j < f; j++) {
+                                let dx = x+d[i][1]*j;
+                                let dy = y+d[i][0]*j;
+                                if (dx < 0 || dx >= 8 || dy < 0 || dy >= 8) break;
+                                if (board[dy][dx] === enemy) num++;
+                            }
+                            if (num !== f-1) continue;
+                            for (let j = 1; j < f; j++) {
+                                let dx = x+d[i][1]*j;
+                                let dy = y+d[i][0]*j;
+                                if (dx < 0 || dx >= 8 || dy < 0 || dy >= 8) break;
+                                canGet.push({x: dx,y: dy});
+                            }
+                        }
+                        if (canGet.length > 0) canPut.push({x,y,canGet});
+                    }
+                }
+                return canPut;
+            }
+
+            function evaluateBoard() {
+                let score = 0;
+                let myMoves = canPut(nowPlayer).length;
+                let enemyPlayer = nowPlayer === 1? 2 : 1;
+                let temp = nowPlayer;
+                nowPlayer = enemyPlayer;
+                let enemyMoves = canPut(nowPlayer).length;
+                nowPlayer = temp;
+                for (let y = 0; y < 8; y++) {
+                    for (let x = 0; x < 8; x++) {
+                        if (board[y][x] === 2) score += evalBoard[y][x];
+                        else if (board[y][x] === 1) score -= evalBoard[y][x];
+                    }
+                }
+                score += (myMoves-enemyMoves)*15;
+                const corners = [[0,0],[0,7],[7,0],[7,7]];
+                for (let [y,x] of corners) {
+                    if (board[y][x] === 2) score += 100;
+                    else if (board[y][x] === 1) score -= 100;
+                }
+                const bad = [
+                    [0,1],[1,0],[1,1],
+                    [0,6],[1,6],[1,7],
+                    [6,0],[6,1],[7,1],
+                    [6,6],[6,7],[7,6]
+                ];
+                for (let [y,x] of bad) {
+                    if (board[y][x] === 2) score -= 40;
+                    else if (board[y][x] === 1) score += 40;
+                }
+                return score;
+            }
+
+            function minimax(depth,alpha,beta,player) {
+                let moves = canPut(player);
+                if (depth === 0 || moves.length === 0) return evaluateBoard();
+                let best;
+                if (player === 2) {
+                    best = -Infinity;
+                    for (let m of moves) {
+                        let backup = JSON.parse(JSON.stringify(board));
+                        applyMove(m, player);
+                        let val = minimax(depth - 1,alpha,beta,1);
+                        board = backup;
+                        best = Math.max(best, val);
+                        alpha = Math.max(alpha,val);
+                        if (beta <= alpha) break;
+                    }
+                } else {
+                    best = Infinity;
+                    for (let m of moves) {
+                        let backup = JSON.parse(JSON.stringify(board));
+                        applyMove(m, player);
+                        let val = minimax(depth - 1,alpha,beta,2);
+                        board = backup;
+                        best = Math.min(best, val);
+                        beta = Math.min(beta,val);
+                        if (beta <= alpha) break;
+                    }
+                }
+                return best;
+            }
+
+            function applyMove(m, player) {
+                board[m.y][m.x] = player;
+                for (let g of m.canGet) {
+                    board[g.y][g.x] = player;
+                }
+            }
+
+            async function sendScore() {
+                const { collection, addDoc } = window.fs;
+                try {
+                    await addDoc(collection(window.db, "ranking"), {name,score});
+                    console.log("送信成功");
+                } catch (e) {
+                    console.error("送信失敗", e);
+                }
+            }
+        </script>
+        <script type="module">
+            import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+            import { getFirestore, collection, addDoc, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+            const firebaseConfig = {
+                apiKey: "AIzaSyD-Qx_nUvqrpRhfEiBRe8yNAYZtC1tnH34",
+                authDomain: "othello-ranking.firebaseapp.com",
+                projectId: "othello-ranking",
+                storageBucket: "othello-ranking.firebasestorage.app",
+                messagingSenderId: "371969637731",
+                appId: "1:371969637731:web:2a5757ecbe3373ad736756"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+
+            window.db = db;
+            window.fs = { collection, addDoc, getDocs, query, orderBy, limit };
+        </script>
+    </body>
+</html>
