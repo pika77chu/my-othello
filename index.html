@@ -300,7 +300,7 @@
                 if (sum === 1 || sum === 2 || (sum >= 6 && sum <= 10)) {
                     score = 0;
                     mode = sum;
-                    let moji = mode === 1? "" : mode === 2? "Beginner" : mode === 6? "Easy" : mode === 7? "Normal" : mode === 8? "Hard" : mode === 9? "Expert" : "Master";
+                    let moji = mode === 1? "Two-player mode" : mode === 2? "Beginner" : mode === 6? "Easy" : mode === 7? "Normal" : mode === 8? "Hard" : mode === 9? "Expert" : "Master";
                     buttons.innerHTML = `<h2>${moji}</h2><p><button onclick="start(4)">Stop</button></p><p id="span"></p>`;
                     let html = `<table>`;
                     for (let y = 0; y < 8; y++) {
@@ -400,14 +400,15 @@
                 let canPutList = canPut(nowPlayer);
                 if (air === 0 || ((white === 0 || black === 0) && white+black !== 0)) {
                     if (mode === 1) {
-                        let message = document.getElementById("message");
+                        let message = "";
                         if (black > white) {
-                            message.innerHTML = "Black wins!"
+                            message = "Black wins!"
                         }else if (white > black) {
-                            message.innerHTML = "White wins!";
+                            message = "White wins!";
                         }else {
-                            message.innerHTML = "It's a draw!"
+                            message = "Draw!"
                         }
+                        document.getElementById("centerMessage").innerHTML = message;
                     }else {
                         let message = "";
                         if (black > white) {
