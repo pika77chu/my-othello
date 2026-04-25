@@ -56,7 +56,7 @@
                 font-size: 40px;
                 font-weight: bold;
                 color: rgba(255,255,255,0.7);
-                pointer-events: none; /* クリック邪魔しない */
+                pointer-events: none;
                 text-shadow: 0 0 10px rgba(0,0,0,0.7);
             }           
             td {
@@ -292,6 +292,7 @@
             const MouseClick = new Audio("マウスクリック.mp3");
             let mode = 0;
             let name = "";
+            let TT = new Map();
             let score = 0;
             let nowPlayer = 1;//black
             const buttons = document.getElementById("buttons");
@@ -316,6 +317,16 @@
             function MusicPlay(a) {
                 a.currentTime = 0;
                 a.play();
+            }
+
+            function hashBoard(player) {
+                let s = player + "|";
+                for (let y = 0; y < 8; y++) {
+                    for (let x = 0; x < 8; x++) {
+                        s += board[y][x];
+                    }
+                }
+                return s;
             }
 
             function start(sum) {
@@ -363,7 +374,7 @@
                     <button onclick="start(1)">Two-player mode</button></p>`;
                 }else if (sum === 5) {
                     BGMPlay(BGM1);
-                    buttons.innerHTML = `<p><a href="#" onclick="start(11)">Ranking</a> <a href="#" onclick="start(4)">Return</a></p><p><button onclick="start(2)">
+                    buttons.innerHTML = `<p><a href="#" onclick="start(11)">Ranking</a> <a href="#" onclick="start(4)">Back</a></p><p><button onclick="start(2)">
                     Beginner</button> <button onclick="start(6)">Easy</button><p><button onclick="start(7)">Normal</button> <button 
                     onclick="start(8)">Hard</button></p><p><button onclick="start(9)">Expert</button> <button onclick="start(10)">
                     Master</button></p>`;
@@ -389,11 +400,11 @@
                         }
                         data = Object.values(map);
                     }
-                    let html = `<h2>RANKING</h2><p><button onclick="start(5)">Return</button></p><ul>`;
+                    let html = `<h2>RANKING</h2><p><button onclick="start(5)">Back</button></p><ul>`;
                     for (let i = 0; i < Math.min(data.length,100); i++) {
                         html += `<li>${i+1}.${data[i].name} - ${data[i].score}</li>`;
                     }
-                    html += `<ul>`;
+                    html += `</ul>`;
                     document.getElementById("buttons").innerHTML = html;
                 })();
                 }else if (sum === 12) {
@@ -426,6 +437,57 @@
                 let moji = `${left} ${turn} ${right}`;
                 document.getElementById("span").innerHTML = moji;
                 let canPutList = canPut(nowPlayer);
+                let op = nowPlayer === 1? 2 : 1;
+                let ocp = canPut(op);
+                if (ocp.length === 0 && canPutList.length === 0) {
+                    BGM2.pause();
+                    if (mode === 1) {
+                            let message = "";
+                            if (black > white) {
+                                message = "Black wins!";
+                            }else if (white > black) {
+                                message = "White wins!";
+                            }else {
+                                message = "Draw!";
+                            }
+                            document.getElementById("centerMessage").innerHTML = message;
+                        }else {
+                            let message = "";
+                            if (black > white) {
+                                message = "You win!";
+                            }else if (white > black) {
+                                message = "You lose!";
+                            }else {
+                                message = "Draw!";
+                            }
+                            document.getElementById("centerMessage").innerHTML = message;
+                            let corner = 0;
+                            const cn = [{x: 0,y: 0},{x: 0,y: 7},{x: 7,y: 0},{x: 7,y: 7}];
+                            for (let c of cn) {
+                                if (board[c.y][c.x] === 1) corner++;
+                            }
+                            let base = 1000+(black-white)*10+corner*50;
+                            let ml = 0;
+                            if (mode === 2) ml = 1;
+                            else if (mode === 6) ml = 2;
+                            else if (mode === 7) ml = 3;
+                            else if (mode === 8) ml = 4;
+                            else if (mode === 9) ml = 5;
+                            else ml = 6;
+                            score = base*ml;
+                            if (black > white) {
+                                let mj = mode === 1? "" : mode === 2? "Beginner" : mode === 6? "Easy" : mode === 7? "Normal" : mode === 8? "Hard" : mode === 9? "Expert" : "Master";
+                                document.getElementById("buttons").innerHTML = `<h2>${mj}</h2>
+                                 <p id="span">${moji}</p>`;
+                                setTimeout(() => {
+                                    document.getElementById("message").innerHTML = "";
+                                    document.getElementById("board").innerHTML = "";
+                                    document.getElementById("buttons").innerHTML = `<p>SCORE: ${score}</p><p>Send this score to the leaderboard?</p><p><button 
+                                    onclick="start(12)">Yes</button> <button onclick="start(4)">No</button></p>`;
+                                },2000);
+                            }
+                        }
+                }
                 if (air === 0 || ((white === 0 || black === 0) && white+black !== 0)) {
                     BGM2.pause();
                     if (mode === 1) {
@@ -475,57 +537,6 @@
                         }
                     }
                 }else if (canPutList.length === 0) {
-                    let op = nowPlayer === 1? 2 : 1;
-                    let ocp = canPut(op);
-                    if (ocp.length === 0) {
-                        BGM2.pause();
-                        if (mode === 1) {
-                            let message = "";
-                            if (black > white) {
-                                message = "Black wins!";
-                            }else if (white > black) {
-                                message = "White wins!";
-                            }else {
-                                message = "Draw!";
-                            }
-                            document.getElementById("centerMessage").innerHTML = message;
-                        }else {
-                            let message = "";
-                            if (black > white) {
-                                message = "You win!";
-                            }else if (white > black) {
-                                message = "You lose!";
-                            }else {
-                                message = "Draw!";
-                            }
-                            document.getElementById("centerMessage").innerHTML = message;
-                            let corner = 0;
-                            const cn = [{x: 0,y: 0},{x: 0,y: 7},{x: 7,y: 0},{x: 7,y: 7}];
-                            for (let c of cn) {
-                                if (board[c.y][c.x] === 1) corner++;
-                            }
-                            let base = 1000+(black-white)*10+corner*50;
-                            let ml = 0;
-                            if (mode === 2) ml = 1;
-                            else if (mode === 6) ml = 2;
-                            else if (mode === 7) ml = 3;
-                            else if (mode === 8) ml = 4;
-                            else if (mode === 9) ml = 5;
-                            else ml = 6;
-                            score = base*ml;
-                            if (black > white) {
-                                let mj = mode === 1? "" : mode === 2? "Beginner" : mode === 6? "Easy" : mode === 7? "Normal" : mode === 8? "Hard" : mode === 9? "Expert" : "Master";
-                                document.getElementById("buttons").innerHTML = `<h2>${mj}</h2>
-                                 <p id="span">${moji}</p>`;
-                                setTimeout(() => {
-                                    document.getElementById("message").innerHTML = "";
-                                    document.getElementById("board").innerHTML = "";
-                                    document.getElementById("buttons").innerHTML = `<p>SCORE: ${score}</p><p>Send this score to the leaderboard?</p><p><button 
-                                    onclick="start(12)">Yes</button> <button onclick="start(4)">No</button></p>`;
-                                },2000);
-                            }
-                        }
-                    }
                     if (mode !== 1 && nowPlayer === 2) {
                         nowPlayer = nowPlayer === 1? 2 : 1;
                     }else {
@@ -588,7 +599,7 @@
                 if (name.length === 0) return;
                 MusicPlay(MouseClick);
                 sendScore();
-                start(4);
+                start(11);
             }
             
             function aiTurn() {
@@ -650,7 +661,7 @@
                     for (let m of moves) {
                         let backup = JSON.parse(JSON.stringify(board));
                         applyMove(m, 2);
-                        let score = minimax(depth,-Infinity,Infinity,false);
+                        let score = minimax(depth,-Infinity,Infinity,1);
                         board = backup;
                         if (score > bestScore) {
                             bestScore = score;
@@ -675,7 +686,7 @@
                     for (let m of moves) {
                         let backup = JSON.parse(JSON.stringify(board));
                         applyMove(m, 2);
-                        let score = minimax(depth,-Infinity,Infinity,false);
+                        let score = minimax(depth,-Infinity,Infinity,1);
                         board = backup;
                         if (score > bestScore) {
                             bestScore = score;
@@ -741,14 +752,31 @@
                 return canPut;
             }
 
-            function evaluateBoard() {
+            function countStable(player) {
+                let stable = 0;
+                const corners = [{x:0,y:0},{x:7,y:0},{x:0,y:7},{x:7,y:7}];
+                for (let c of corners) {
+                    if (board[c.y][c.x] !== player) continue;
+                    stable++;
+                    let dx = c.x === 0 ? 1 : -1;
+                    for (let x = c.x + dx; x >= 0 && x < 8; x += dx) {
+                        if (board[c.y][x] === player) stable++;
+                        else break;
+                    }
+                    let dy = c.y === 0 ? 1 : -1;
+                    for (let y = c.y + dy; y >= 0 && y < 8; y += dy) {
+                        if (board[y][c.x] === player) stable++;
+                        else break;
+                    }
+                }
+                return stable;
+            }
+
+            function evaluateBoard(player) {
                 let score = 0;
-                let myMoves = canPut(nowPlayer).length;
-                let enemyPlayer = nowPlayer === 1? 2 : 1;
-                let temp = nowPlayer;
-                nowPlayer = enemyPlayer;
-                let enemyMoves = canPut(nowPlayer).length;
-                nowPlayer = temp;
+                let myMoves = canPut(player).length;
+                let enemyPlayer = player === 1? 2 : 1;
+                let enemyMoves = canPut(enemyPlayer).length;
                 for (let y = 0; y < 8; y++) {
                     for (let x = 0; x < 8; x++) {
                         if (board[y][x] === 2) score += evalBoard[y][x];
@@ -771,12 +799,33 @@
                     if (board[y][x] === 2) score -= 40;
                     else if (board[y][x] === 1) score += 40;
                 }
+                let disc = 0;
+                let air = 0;
+                for (let i = 0; i < 8; i++) {
+                    for (let j = 0; j < 8; j++) {
+                        if (board[i][j] === player) disc++;
+                        else if (board[i][j] === enemyPlayer) disc--;
+                        else air++;
+                    }
+                }
+                if (air > 20) {
+                    score += disc*2;
+                }else if (air > 10) {
+                    score += disc*6;
+                }else {
+                    score += disc*15;
+                }
+                let myStable = countStable(player);
+                let enemyStable = countStable(enemyPlayer);
+                score += (myStable - enemyStable)*80;
                 return score;
             }
 
             function minimax(depth,alpha,beta,player) {
+                let key = depth + "|" + player + "|" + hashBoard(player);
+                if (TT.has(key)) return TT.get(key);
                 let moves = canPut(player);
-                if (depth === 0 || moves.length === 0) return evaluateBoard();
+                if (depth === 0 || moves.length === 0) return evaluateBoard(2);
                 let best;
                 if (player === 2) {
                     best = -Infinity;
@@ -801,6 +850,7 @@
                         if (beta <= alpha) break;
                     }
                 }
+                TT.set(key, best);
                 return best;
             }
 
