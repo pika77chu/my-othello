@@ -197,7 +197,7 @@
                 margin-top: 10px;
                 font-size: min(4.5vw, 20px);
                 font-weight: bold;
-                padding: 10px 14px;
+                padding: 1px 14px;
                 border-radius: 12px;
                 display: inline-block;
                 background: radial-gradient(circle at top, #ffe4b5, #b58b4c);
@@ -287,17 +287,16 @@
         <audio id="bgm1" src="Breakbeats_01.mp3" loop></audio>
         <audio id="bgm2" src="キネマティック_01.mp3" loop></audio>
         <script>
-            const BGM1 = document.getElementById("bgm1");
-            const BGM2 = document.getElementById("bgm2");
-            const MouseClick = new Audio("マウスクリック.mp3");
+            const BGM1 = document.getElementById("bgm1");//BGM①
+            const BGM2 = document.getElementById("bgm2");//BGM②
+            const MouseClick = new Audio("マウスクリック.mp3");//効果音
             let mode = 0;
-            let name = "";
-            let TT = new Map();
-            let score = 0;
+            let name = "";//ユーザーの名前
+            let score = 0;//score
             let nowPlayer = 1;//black
             const buttons = document.getElementById("buttons");
             const boards = document.getElementById("board");
-            let board = [];
+            let board = [];//盤面の状況配列
             const evalBoard = [
                 [120,-20, 20,  5,  5, 20,-20,120],
                 [-20,-40, -5, -5, -5, -5,-40,-20],
@@ -307,35 +306,25 @@
                 [ 20, -5, 15,  3,  3, 15, -5, 20],
                 [-20,-40, -5, -5, -5, -5,-40,-20],
                 [120,-20, 20,  5,  5, 20,-20,120]
-            ];
+            ];//盤面の評価配列
 
-            const BGMPlay = (bgm) => {
-                bgm.volume = 0.5;
-                bgm.play();
+            const BGMPlay = (bgm) => {//BGM
+                bgm.volume = 0.5;//音の大きさ
+                bgm.play();//鳴らす
             }
 
-            function MusicPlay(a) {
-                a.currentTime = 0;
-                a.play();
-            }
-
-            function hashBoard(player) {
-                let s = player + "|";
-                for (let y = 0; y < 8; y++) {
-                    for (let x = 0; x < 8; x++) {
-                        s += board[y][x];
-                    }
-                }
-                return s;
+            function MusicPlay(a) {//効果音
+                a.currentTime = 0;//音の長さ
+                a.play();//鳴らす
             }
 
             function start(sum) {
-                MusicPlay(MouseClick);
-                if (sum === 1 || sum === 2 || (sum >= 6 && sum <= 10)) {
-                    BGM1.pause();
+                MusicPlay(MouseClick);//効果音
+                if (sum === 1 || sum === 2 || (sum >= 6 && sum <= 10)) {//オセロスタート
+                    BGM1.pause();//BGMを止める
                     BGMPlay(BGM2);
-                    score = 0;
-                    mode = sum;
+                    score = 0;//score初期化
+                    mode = sum;//modeの値を設定
                     let moji = mode === 1? "Two-player mode" : mode === 2? "Beginner" : mode === 6? "Easy" : mode === 7? "Normal" : mode === 8? "Hard" : mode === 9? "Expert" : "Master";
                     buttons.innerHTML = `<h2>${moji}</h2><p><button onclick="start(4)">Stop</button></p><p id="span"></p>`;
                     let html = `<table>`;
@@ -348,7 +337,7 @@
                         html += `</tr>`;
                     }
                     html += `</table>`;
-                    boards.innerHTML = html+`<div id="centerMessage" class="center-message"></div>`;
+                    boards.innerHTML = html+`<div id="centerMessage" class="center-message"></div>`;//盤面生成
                     board = new Array(8);
                     for (let i = 0; i < 8; i++) board[i] = new Array(8).fill(0);
                     board[3][3] = 2;//white
@@ -356,8 +345,9 @@
                     board[4][4] = 2;//white
                     board[3][4] = 1;//black
                     nowPlayer = 1;//black
-                    stonePut();
-                    span();
+                    stonePut();//盤面処理
+                    span();//切り替え処理
+                    //置けるところを表示
                     if (mode === 1 || mode >= 8) return;
                     let canPutList = canPut(nowPlayer);
                     for (let i = 0; i < 64; i++) document.getElementById(i).classList.remove("can");
@@ -378,15 +368,15 @@
                     Beginner</button> <button onclick="start(6)">Easy</button><p><button onclick="start(7)">Normal</button> <button 
                     onclick="start(8)">Hard</button></p><p><button onclick="start(9)">Expert</button> <button onclick="start(10)">
                     Master</button></p>`;
-                }else if (sum === 11) {
+                }else if (sum === 11) {//ランキング表示
                     (async () => {
-                    const q = window.fs.query(
+                    const q = window.fs.query(//fire baseのfire storeから取得
                         window.fs.collection(window.db, "ranking"),
                         window.fs.orderBy("score", "desc"),
                         window.fs.limit(100)
                     );
                     const snap = await window.fs.getDocs(q);
-                    let data = [];
+                    let data = [];//配列に置き換え
                     snap.forEach(doc => {
                         data.push(doc.data());
                     });
@@ -412,10 +402,10 @@
                 }
             }
 
-            function input() {
+            function input() {//input処理
                 name = document.getElementById("input").value;
                 document.getElementById("input").classList.remove("empty");
-                if (name.length === 0) document.getElementById("input").classList.add("empty");
+                if (name.length === 0) document.getElementById("input").classList.add("empty");//名前未入力時はempty
             }
 
             function span() {
@@ -435,11 +425,11 @@
                 let left = `${mode === 1? "Black" : "You"}: ${black}`;
                 let right = `${mode === 1? "White": "Opponent"}: ${white}`;
                 let moji = `${left} ${turn} ${right}`;
-                document.getElementById("span").innerHTML = moji;
+                document.getElementById("span").innerHTML = moji;//盤面状況を書く
                 let canPutList = canPut(nowPlayer);
                 let op = nowPlayer === 1? 2 : 1;
                 let ocp = canPut(op);
-                if (ocp.length === 0 && canPutList.length === 0) {
+                if (ocp.length === 0 && canPutList.length === 0) {//勝利判定
                     BGM2.pause();
                     if (mode === 1) {
                             let message = "";
@@ -474,7 +464,7 @@
                             else if (mode === 8) ml = 4;
                             else if (mode === 9) ml = 5;
                             else ml = 6;
-                            score = base*ml;
+                            score = base*ml;//score計算
                             if (black > white) {
                                 let mj = mode === 1? "" : mode === 2? "Beginner" : mode === 6? "Easy" : mode === 7? "Normal" : mode === 8? "Hard" : mode === 9? "Expert" : "Master";
                                 document.getElementById("buttons").innerHTML = `<h2>${mj}</h2>
@@ -488,7 +478,7 @@
                             }
                         }
                 }
-                if (air === 0 || ((white === 0 || black === 0) && white+black !== 0)) {
+                if (air === 0 || ((white === 0 || black === 0) && white+black !== 0)) {//勝利判定
                     BGM2.pause();
                     if (mode === 1) {
                         let message = "";
@@ -523,7 +513,7 @@
                         else if (mode === 8) ml = 4;
                         else if (mode === 9) ml = 5;
                         else ml = 6;
-                        score = base*ml;
+                        score = base*ml;//score計算
                         if (black > white) {
                             let mj = mode === 1? "" : mode === 2? "Beginner" : mode === 6? "Easy" : mode === 7? "Normal" : mode === 8? "Hard" : mode === 9? "Expert" : "Master";
                             document.getElementById("buttons").innerHTML = `<h2>${mj}</h2>
@@ -536,7 +526,7 @@
                             },2000);
                         }
                     }
-                }else if (canPutList.length === 0) {
+                }else if (canPutList.length === 0) {//置けるところがない場合
                     if (mode !== 1 && nowPlayer === 2) {
                         nowPlayer = nowPlayer === 1? 2 : 1;
                     }else {
@@ -550,13 +540,30 @@
                             }
                         },1000);
                     }
+                    let white1 = 0;
+                    let black1 = 0;
+                    let air1 = 0;
+                    for (let i = 0; i < 8; i++) {
+                        for (let j = 0; j < 8; j++) {
+                            if (board[i][j] === 0) air1++;
+                            else if (board[i][j] === 1) black1++;
+                            else white1++;
+                        }
+                    }
+                    let turn1 = "";
+                    if (mode === 1) turn1 = nowPlayer === 1? "Black turn" : "White turn";
+                    else turn1 = nowPlayer === 1? "Your turn" : "Opponent’s turn";
+                    let left1 = `${mode === 1? "Black" : "You"}: ${black1}`;
+                    let right1 = `${mode === 1? "White": "Opponent"}: ${white1}`;
+                    let moji1 = `${left1} ${turn1} ${right1}`;
+                    document.getElementById("span").innerHTML = moji1;//盤面状況を書く
                 }else if (mode !== 1 && nowPlayer === 2) {
                     let e = mode <= 8? 1000 : 2000;
                     setTimeout(() => {aiTurn();},e);
                 }
             }
 
-            function setUpClickEvents(td) {
+            function setUpClickEvents(td) {//タッチ処理
                 if (mode !== 1 && nowPlayer === 2) return;
                 let canPutList = canPut(nowPlayer);
                 let tx = td%8;
@@ -568,8 +575,8 @@
                 }
                 if (num === 0) return;
                 MusicPlay(MouseClick);
-                board[cp.y][cp.x] = nowPlayer;
-                for (let g of cp.canGet) board[g.y][g.x] = nowPlayer;
+                board[cp.y][cp.x] = nowPlayer;//ひっくり返す
+                for (let g of cp.canGet) board[g.y][g.x] = nowPlayer;//ひっくり返す
                 stonePut();
                 nowPlayer = nowPlayer === 1? 2 : 1;
                 span();
@@ -595,81 +602,81 @@
                 }
             }
 
-            function send() {
+            function send() {//rankingに送信
                 if (name.length === 0) return;
                 MusicPlay(MouseClick);
                 sendScore();
                 start(11);
             }
             
-            function aiTurn() {
+            function aiTurn() {//AIターン
                 let canPutList = canPut(nowPlayer);
                 if (mode === 2) {
-                    let cp = canPutList.filter(x => x.canGet.length <= 3);
-                    if (cp.length === 0) cp = [...canPutList];
-                    let c = cp[Math.floor(Math.random()*cp.length)];
-                    board[c.y][c.x] = nowPlayer;
+                    let cp = canPutList.filter(x => x.canGet.length <= 3);//ひっくり返す石が少ない手を選ぶ
+                    if (cp.length === 0) cp = [...canPutList];//なかったら全部選ぶ
+                    let c = cp[Math.floor(Math.random()*cp.length)];//その中からランダムに選ぶ
+                    board[c.y][c.x] = nowPlayer;//ひっくり返す
                     for (let g of c.canGet) {
                         board[g.y][g.x] = nowPlayer;
                     }
                 }else if (mode === 6) {
-                    canPutList.sort((a,b) => b.canGet.length - a.canGet.length);
-                    let num = canPutList[0].canGet.length;
-                    let cp = canPutList.filter(x => x.canGet.length === num);
-                    let c = cp[Math.floor(Math.random()*cp.length)];
-                    board[c.y][c.x] = nowPlayer;
+                    canPutList.sort((a,b) => b.canGet.length - a.canGet.length);//ひっくり返す石が多い順に並べる
+                    let num = canPutList[0].canGet.length;//一番多く取れる手で取れる石の数
+                    let cp = canPutList.filter(x => x.canGet.length === num);//一番多く取れる手を選ぶ
+                    let c = cp[Math.floor(Math.random()*cp.length)];//その中からランダムに選ぶ
+                    board[c.y][c.x] = nowPlayer;//ひっくり返す
                     for (let g of c.canGet) {
                         board[g.y][g.x] = nowPlayer;
                     }
                 }else if (mode === 7) {
-                    let cp = canPutList.filter(x => ((x.x === 0 && x.y === 0) || (x.x === 7 && x.y === 0) || (x.x === 0 && x.y === 7) || (x.x === 7 && x.y === 7)));
-                    if (cp.length === 0) cp = [...canPutList];
-                    cp.sort((a,b) => b.canGet.length - a.canGet.length);
-                    let num = cp[0].canGet.length;
-                    let cp2 = cp.filter(x => x.canGet.length === num);
-                    let c = cp2[Math.floor(Math.random()*cp2.length)];
-                    board[c.y][c.x] = nowPlayer;
+                    let cp = canPutList.filter(x => ((x.x === 0 && x.y === 0) || (x.x === 7 && x.y === 0) || (x.x === 0 && x.y === 7) || (x.x === 7 && x.y === 7)));//角を取れる手を選ぶ
+                    if (cp.length === 0) cp = [...canPutList];//なかったら全て選ぶ
+                    cp.sort((a,b) => b.canGet.length - a.canGet.length);//ひっくり返す石が多い順に並べる
+                    let num = cp[0].canGet.length;//一番多く取れる手で取れる石の数
+                    let cp2 = cp.filter(x => x.canGet.length === num);//一番多く取れる手を選ぶ
+                    let c = cp2[Math.floor(Math.random()*cp2.length)];//その中からランダムに選ぶ
+                    board[c.y][c.x] = nowPlayer;//ひっくり返す
                     for (let g of c.canGet) {
                         board[g.y][g.x] = nowPlayer;
                     }
                 }else if (mode === 8) {
-                    canPutList.sort((a,b) => (evalBoard[b.y][b.x]+b.canGet.length*2) - (evalBoard[a.y][a.x]+a.canGet.length*2));
-                    let num = evalBoard[canPutList[0].y][canPutList[0].x];
-                    let cp = canPutList.filter(x => evalBoard[x.y][x.x] === num);
-                    cp.sort((a,b) => b.canGet.length - a.canGet.length);
-                    let num2 = cp[0].canGet.length;
-                    let cp2 = cp.filter(x => x.canGet.length === num2);
-                    let c = cp2[Math.floor(Math.random()*cp2.length)];
-                    board[c.y][c.x] = nowPlayer;
+                    canPutList.sort((a,b) => (evalBoard[b.y][b.x]+b.canGet.length*2) - (evalBoard[a.y][a.x]+a.canGet.length*2));//評価配列と取れる枚数で計算した得点順に並べる
+                    let num = evalBoard[canPutList[0].y][canPutList[0].x]+canPutList[0].canGet.length*2;//一番高い得点
+                    let cp = canPutList.filter(x => evalBoard[x.y][x.x]+x.canGet.length*2 === num);//得点が一番高い手を選ぶ
+                    cp.sort((a,b) => b.canGet.length - a.canGet.length);//ひっくり返す石が多い順に並べる
+                    let num2 = cp[0].canGet.length;//一番多く取れる手で取れる石の数
+                    let cp2 = cp.filter(x => x.canGet.length === num2);//一番多く取れる手を選ぶ
+                    let c = cp2[Math.floor(Math.random()*cp2.length)];//その中からランダムに選ぶ
+                    board[c.y][c.x] = nowPlayer;//ひっくり返す
                     for (let g of c.canGet) {
                         board[g.y][g.x] = nowPlayer;
                     }
                 }else if (mode === 9) {
-                    let air = 0;
+                    let air = 0;//あと何手で終わるかを見る
                     for (let i = 0; i < 8; i++) {
                         for (let j = 0; j < 8; j++) {
                             if (board[i][j] === 0) air++;
                         }
                     }
-                    let depth = 0;
+                    let depth = 0;//読みの深さを決める
                     if (air < 15) depth = 8;
                     else depth = 6;
                     let moves = canPut(nowPlayer);
-                    moves.sort((a,b) => (evalBoard[b.y][b.x]+b.canGet.length*2) - (evalBoard[a.y][a.x]+a.canGet.length*2));
+                    moves.sort((a,b) => (evalBoard[b.y][b.x]+b.canGet.length*2) - (evalBoard[a.y][a.x]+a.canGet.length*2));//得点順に並べる
                     let bestMove = null;
                     let bestScore = -Infinity;
                     for (let m of moves) {
-                        let backup = JSON.parse(JSON.stringify(board));
-                        applyMove(m, 2);
-                        let score = minimax(depth,-Infinity,Infinity,1);
-                        board = backup;
-                        if (score > bestScore) {
+                        let backup = JSON.parse(JSON.stringify(board));//boardをコピーする
+                        applyMove(m,2);//石を置く
+                        let score = minimax(depth - 1,-Infinity,Infinity,1);//minimaxを呼び出す
+                        board = backup;//boardを元に戻す
+                        if (score > bestScore) {//bestScoreを変える
                             bestScore = score;
                             bestMove = m;
                         }
                     }
-                    if (bestMove) applyMove(bestMove, 2);
-                }else if (mode === 10) {
+                    if (bestMove) applyMove(bestMove, 2);//石を置く
+                }else if (mode === 10) {//mode === 9と同じことをする
                     let air = 0;
                     for (let i = 0; i < 8; i++) {
                         for (let j = 0; j < 8; j++) {
@@ -678,15 +685,16 @@
                     }
                     let depth = 0;
                     if (air < 15) depth = 10;
-                    else depth = 8;
+                    else if (air < 25) depth = 8;
+                    else depth = 6;
                     let moves = canPut(nowPlayer);
                     moves.sort((a,b) => (evalBoard[b.y][b.x]+b.canGet.length*2) - (evalBoard[a.y][a.x]+a.canGet.length*2));
                     let bestMove = null;
                     let bestScore = -Infinity;
                     for (let m of moves) {
                         let backup = JSON.parse(JSON.stringify(board));
-                        applyMove(m, 2);
-                        let score = minimax(depth,-Infinity,Infinity,1);
+                        applyMove(m,2);
+                        let score = minimax(depth - 1,-Infinity,Infinity,1);
                         board = backup;
                         if (score > bestScore) {
                             bestScore = score;
@@ -695,7 +703,7 @@
                     }
                     if (bestMove) applyMove(bestMove, 2);
                 }
-                stonePut();
+                stonePut();//盤面処理
                 nowPlayer = nowPlayer === 1? 2 : 1;
                 span();
                 if (mode === 1 || mode >= 8) return;
@@ -707,14 +715,14 @@
                 }
             }
 
-            function canPut(player) {
+            function canPut(player) {//石を置けるところを調べる
                 let canPut = [];
                 let enemy = player === 1? 2 : 1;
                 for (let y = 0; y < 8; y++) {
                     for (let x = 0; x < 8; x++) {
                         let canGet = [];
-                        if (board[y][x] !== 0) continue;
-                        let d = [];
+                        if (board[y][x] !== 0) continue;//石が置いてたらcontinue
+                        let d = [];//周りを調べる
                         for (let i = -1; i <= 1; i++) {
                             for (let j = -1; j <= 1; j++) {
                                 if (y+i < 0 || y+i >= 8 || x+j < 0 || x+j >= 8) continue;
@@ -723,7 +731,7 @@
                         }
                         if (d.length === 0) continue;
                         for (let i = 0; i < d.length; i++) {
-                            let f = 0;
+                            let f = 0;//さっき調べた方向の先に同じ色の石があるか
                             for (let j = 2; j < 8; j++) {
                                 let dx = x+d[i][1]*j;
                                 let dy = y+d[i][0]*j;
@@ -731,7 +739,7 @@
                                 if (board[dy][dx] === player) {f = j;break;}
                             }
                             if (f === 0) continue;
-                            let num = 0;
+                            let num = 0;//その間に相手の石がびっしり置いてあるか
                             for (let j = 1; j < f; j++) {
                                 let dx = x+d[i][1]*j;
                                 let dy = y+d[i][0]*j;
@@ -749,35 +757,15 @@
                         if (canGet.length > 0) canPut.push({x,y,canGet});
                     }
                 }
-                return canPut;
+                return canPut;//canPutを返す
             }
 
-            function countStable(player) {
-                let stable = 0;
-                const corners = [{x:0,y:0},{x:7,y:0},{x:0,y:7},{x:7,y:7}];
-                for (let c of corners) {
-                    if (board[c.y][c.x] !== player) continue;
-                    stable++;
-                    let dx = c.x === 0 ? 1 : -1;
-                    for (let x = c.x + dx; x >= 0 && x < 8; x += dx) {
-                        if (board[c.y][x] === player) stable++;
-                        else break;
-                    }
-                    let dy = c.y === 0 ? 1 : -1;
-                    for (let y = c.y + dy; y >= 0 && y < 8; y += dy) {
-                        if (board[y][c.x] === player) stable++;
-                        else break;
-                    }
-                }
-                return stable;
-            }
-
-            function evaluateBoard(player) {
+            function evaluateBoard(player) {//評価関数
                 let score = 0;
                 let myMoves = canPut(player).length;
                 let enemyPlayer = player === 1? 2 : 1;
                 let enemyMoves = canPut(enemyPlayer).length;
-                for (let y = 0; y < 8; y++) {
+                for (let y = 0; y < 8; y++) {//評価配列を使った評価
                     for (let x = 0; x < 8; x++) {
                         if (board[y][x] === 2) score += evalBoard[y][x];
                         else if (board[y][x] === 1) score -= evalBoard[y][x];
@@ -785,7 +773,7 @@
                 }
                 score += (myMoves-enemyMoves)*15;
                 const corners = [[0,0],[0,7],[7,0],[7,7]];
-                for (let [y,x] of corners) {
+                for (let [y,x] of corners) {//角
                     if (board[y][x] === 2) score += 100;
                     else if (board[y][x] === 1) score -= 100;
                 }
@@ -795,73 +783,79 @@
                     [6,0],[6,1],[7,1],
                     [6,6],[6,7],[7,6]
                 ];
-                for (let [y,x] of bad) {
+                for (let [y,x] of bad) {//悪手
                     if (board[y][x] === 2) score -= 40;
                     else if (board[y][x] === 1) score += 40;
                 }
-                let disc = 0;
-                let air = 0;
-                for (let i = 0; i < 8; i++) {
-                    for (let j = 0; j < 8; j++) {
-                        if (board[i][j] === player) disc++;
-                        else if (board[i][j] === enemyPlayer) disc--;
-                        else air++;
-                    }
-                }
-                if (air > 20) {
-                    score += disc*2;
-                }else if (air > 10) {
-                    score += disc*6;
-                }else {
-                    score += disc*15;
-                }
-                let myStable = countStable(player);
-                let enemyStable = countStable(enemyPlayer);
-                score += (myStable - enemyStable)*80;
-                return score;
+                let myStable = countStable(2);//安定石
+                let enemyStable = countStable(1);
+                score += (myStable - enemyStable) * 80;
+                return score;//scoreを返す
             }
 
-            function minimax(depth,alpha,beta,player) {
-                let key = depth + "|" + player + "|" + hashBoard(player);
-                if (TT.has(key)) return TT.get(key);
+            function countStable(player) {//安定石を調べる
+                let stable = 0;
+                const corners = [
+                    {x:0,y:0},
+                    {x:7,y:0},
+                    {x:0,y:7},
+                    {x:7,y:7}
+                ];
+                for (let c of corners) {
+                    if (board[c.y][c.x] !== player) continue;
+                    stable++;
+                    for (let dx = 1; dx < 8; dx++) {
+                        let x = c.x === 0 ? dx : 7 - dx;
+                        if (board[c.y][x] === player) stable++;
+                        else break;
+                    }
+                    for (let dy = 1; dy < 8; dy++) {
+                        let y = c.y === 0 ? dy : 7 - dy;
+                        if (board[y][c.x] === player) stable++;
+                        else break;
+                    }
+                }
+                return stable;
+            }
+
+            function minimax(depth,alpha,beta,player) {//ミニマックス法のミニマックス
                 let moves = canPut(player);
-                if (depth === 0 || moves.length === 0) return evaluateBoard(2);
+                if (depth === 0 || moves.length === 0) return evaluateBoard(2);//読みが終わったら返す
                 let best;
                 if (player === 2) {
                     best = -Infinity;
                     for (let m of moves) {
                         let backup = JSON.parse(JSON.stringify(board));
-                        applyMove(m, player);
+                        applyMove(m,player);
                         let val = minimax(depth - 1,alpha,beta,1);
                         board = backup;
                         best = Math.max(best, val);
                         alpha = Math.max(alpha,val);
-                        if (beta <= alpha) break;
+                        if (beta <= alpha) break;//αβ枝刈り
                     }
                 } else {
                     best = Infinity;
                     for (let m of moves) {
                         let backup = JSON.parse(JSON.stringify(board));
-                        applyMove(m, player);
+                        applyMove(m,player);
                         let val = minimax(depth - 1,alpha,beta,2);
                         board = backup;
                         best = Math.min(best, val);
                         beta = Math.min(beta,val);
-                        if (beta <= alpha) break;
+                        if (beta <= alpha) break;//αβ枝刈り
                     }
                 }
-                TT.set(key, best);
                 return best;
             }
 
-            function applyMove(m, player) {
+            function applyMove(m, player) {//石を置く
                 board[m.y][m.x] = player;
                 for (let g of m.canGet) {
                     board[g.y][g.x] = player;
                 }
             }
 
-            async function sendScore() {
+            async function sendScore() {//ランキング処理
                 const { collection, addDoc } = window.fs;
                 try {
                     await addDoc(collection(window.db, "ranking"), {name,score});
